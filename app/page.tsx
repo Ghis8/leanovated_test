@@ -1,101 +1,164 @@
+'use client'
+
+import CardComponent from "@/components/CardComponent";
+import useAuthStore, { customStorage } from "@/stores/authStore";
+import { userData } from "@/utils/dummyUserData";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { MdCancel } from "react-icons/md";
+
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const {user,addProject}=useAuthStore()
+  const router=useRouter()
+  const [createProject,setCreateProject]=useState(false)
+  const [createOrganization,setCreateOrganization]=useState(false)
+  const [organization,setOrganization]=useState({
+    name:"",
+    members:[]
+  })
+  const [projectName,setProjectName]=useState('')
+  const [isHydrated, setIsHydrated] = useState(false);
+  const loggedInUser=customStorage.getItem('user-storage')
+  // console.log("user->",user)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  // if (!isHydrated) return <div>Loading...</div>
+  // console.log("Logged In User->",loggedInUser?.state.user)
+
+  if (!loggedInUser){
+    router.push("/auth")
+  }
+  const AddProject=()=>{
+    if(projectName===''){
+      return toast.error("Project name required")
+      setCreateProject(false)
+    }
+    // addProject(projectName)
+    for(let element of userData){
+      if(user?.email === element.email){
+        element.projects.push(projectName)
+        setCreateProject(false)
+        
+      }
+    }
+    
+    return toast.success("Project Added")
+  }
+  const CreateOrganization=()=>{
+
+  }
+  useEffect(()=>{
+    setIsHydrated(true)
+  },[])
+  // console.log("user",user)
+  return (
+    <section className="relative">
+      {
+          createProject && (
+            <div className="absolute z-30 w-2/5 shadow-lg flex flex-col justify-center py-10 rounded-md mx-auto bg-white top-[20%] left-[35%]">
+              <MdCancel 
+                className="absolute top-5 right-5 cursor-pointer"
+                size={24}
+                color="black"
+                onClick={()=>setCreateProject(false)}
+              />
+              <div className="text-center">
+                <span className="text-black font-bold text-xl uppercase">Create a Project</span>
+              </div>
+              <input 
+                onChange={(e)=>setProjectName(e.target.value.trim())}
+                placeholder="Project Name"
+                className="py-2 indent-2 border-[1px] border-gray-400 w-2/4 rounded-md mx-auto mt-10"
+              />
+              <button onClick={AddProject} className="bg-blue-600 py-2 w-1/4 mx-auto text-white rounded-md mt-5">Add Project</button>
+            </div>
+          )
+        }
+      <main className={createProject ?"w-3/4 blur-sm  mx-auto  mt-10":"w-3/4  mx-auto bg-white mt-10"}>
+        
+        <span className="text-2xl text-gray-800 font-semibold">Welcome to ProjectMaster</span>
+        <div className="mx-auto my-5">
+          <span className="text-xl">Dashboard</span>
+          <div className="grid grid-cols-3 gap-x-4 mt-5">
+            <CardComponent 
+              title="My Projets"
+              text={`You have ${user?.projects?.length} active projects`}
+              click={()=>{}}
+              label="View Projects"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <CardComponent 
+              title="My Organizations"
+              text={`You are a member of ${user?.organizations.length} organizations`}
+              click={()=>{}}
+              label="View Organisations"
+            />
+            <div className="shadow-md flex flex-col justify-center pl-10 py-5 space-y-4 bg-gray-100">
+              <span className="font-semiboldold my-5 font-bold">Recent Activity</span>
+              <div className="flex flex-col space-y-2">
+                <span className="">Project "Website Redesign" updated</span>
+                <span>New team member added to "Mobile App Development"</span>
+                <span>Task "Create wireframes" completed</span>
+              </div>
+            </div>
+          </div>
         </div>
+        <div className="mx-auto my-5">
+          <span className="text-xl">Projects</span>
+          <div className="grid grid-cols-3 gap-x-4 mt-5">
+            {
+              user?.projects?.map(p=>(
+                <CardComponent 
+                  title={p}
+                  text="Progress: 75%"
+                  click={()=>{}}
+                  label="View Project"
+                />
+              ))
+            }
+            {/* <CardComponent 
+              title="Mobile App Development"
+              text="Progress: 40%"
+              click={()=>{}}
+              label="View Project"
+            />
+            <CardComponent 
+              title="Marketing Campaign"
+              text="Progress: 70%"
+              click={()=>{}}
+              label="View Project"
+            /> */}
+            
+          </div>
+        </div>
+        <button onClick={()=>setCreateProject(true)} className="bg-blue-600 w-1/6 py-3 rounded-md text-white text-center">Create Project</button>
+        <div className="mx-auto my-5">
+          <span className="text-xl">Organizations</span>
+          <div className="grid grid-cols-3 gap-x-4 mt-5">
+            <CardComponent 
+              title="Tech"
+              text="Role: Admin"
+              click={()=>{}}
+              label="Manage Organization"
+            />
+            <CardComponent 
+              title="G-Corp"
+              text="Role: Member"
+              click={()=>{}}
+              label="Manage Organization"
+            />
+          </div>
+        </div>
+        <button  className="bg-blue-600 w-1/6 py-3 rounded-md text-white text-center">Create Organization</button>
+        <div className="my-5 w-2/4">
+          <span className="capitalize text-wrap bg-blue-600  py-3 rounded-md text-white text-center">
+            user management 
+          </span>
+        </div>
+        <span className="">Add User</span>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    </section>
+    
   );
 }

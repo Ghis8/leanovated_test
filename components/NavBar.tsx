@@ -4,8 +4,6 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
 
-
-
 function NavBar() {
   const {user, isAuthenticated, login, logout}=useAuthStore()
 
